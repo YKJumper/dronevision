@@ -136,6 +136,46 @@ def matchScaledTemplate(template, img, meth, template_ver, zoom_step, min_degree
             return top_left, bottom_right, j, template_ver
     return [-1, -1], [-1, -1], 0
 
+def matchTemplateParallel(template, img, meth):
+    h = template.shape[0]; w = template.shape[1]
+    Hi = img.shape[0]; Wi = img.shape[1]
+    fragmentsLst = []
+    
+    # fragmentsLst = [[1,1],[1,0],[1,2],[0,1],[2,1],[0,0],[0,2],[2,0],[2,2]]
+
+    for j in scalePers:
+        zoomValue = zoom_step ** j
+        width = int(Wi * zoomValue); height = int(Hi * zoomValue)
+        dim = (width, height)
+
+        resized = cv.resize(img, dim, interpolation = cv.INTER_LINEAR)
+
+        method = eval(meth)
+        # Apply template Matching
+        res = cv.matchTemplate(resized, template, method)
+        res_ver = cv.matchTemplate(resized, template_ver, method)
+        min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
+        min_val_ver, max_val_ver, min_loc_ver, max_loc_ver = cv.minMaxLoc(res_ver)
+        # If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
+        if method in [cv.TM_SQDIFF, cv.TM_SQDIFF_NORMED]:
+            top_left = min_loc
+            top_left_ver = min_loc_ver
+        else:
+            top_left = max_loc
+            top_left_ver = max_loc_ver
+        dst = dist(top_left_ver, top_left)
+        if dst <= h:
+            top_left = (int(top_left[0] / zoomValue), int(top_left[1] / zoomValue))
+            bottom_right = (int((top_left[0] + w) / zoomValue), int((top_left[1] + h) / zoomValue))
+            # Define the coordinates of the new template in the image
+            scaleCoef = 1 / zoomValue; h_shift = 2 * h * scaleCoef; w_shift = 2 * w * scaleCoef
+            vx1, vy1, vx2, vy2 = top_left[0], top_left[1], int(top_left[0] + w_shift), int(top_left[1] + h_shift)
+            # Extract the templates
+            template_ver = img[vy1:vy2, vx1:vx2].copy()
+            # template = template_ver[int((vy2-vy1)/2):vy2-vy1, int((vx2-vx1)/2):vx2-vx1].copy()
+            return top_left, bottom_right, j, template_ver
+    return [-1, -1], [-1, -1], 0
+
 def distanceApprox(A, B, C, mAB, mBC, mCA):
     mBC2 = mBC*mBC
     eps = 0.001
@@ -268,7 +308,7 @@ meth = 'cv.TM_CCOEFF_NORMED'
 template = cv.imread('proxima3/target-t.jpg', cv.IMREAD_GRAYSCALE)
 template_ver = cv.imread('proxima3/target-v.jpg', cv.IMREAD_GRAYSCALE)
 # assert template is not None, "file could not be read, check with os.path.exists()"
-image_name = 'proxima3/F1.jpg'
+image_name = 'proxima3/F0.jpg'
 img = cv.imread(image_name, cv.IMREAD_GRAYSCALE)
 # assert img is not None, "file could not be read, check with os.path.exists()"
 method = eval(meth)
