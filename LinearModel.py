@@ -85,28 +85,28 @@ def GradToRad(degrees):
 #endregion ===============================
 
 #region ============ Guiding Functions
-def ScreenTransformationXY(xl, yl, Psi):
+def ScreenTransformationXY(xl, yl, Phi):
     # x`O`y` -- відносна система координат
     # xOy` -- переносна система координат -- вертикально орієнтований екран, рухається плоскопаралельно з корпусом дрона
     # Перетворення системи координат на екрані
-    # Psi -- поворот Roll в градусах
-    RPsi = GradToRad(Psi)
-    x = xl*math.cos(RPsi) + yl*math.sin(RPsi) + Ra*math.sin(RPsi)
-    y = -xl*math.sin(RPsi) + yl*math.cos(RPsi) - Ra*(1 - math.cos(RPsi))
+    # Phi -- поворот Roll в градусах
+    RPhi = GradToRad(Phi)
+    x = xl*math.cos(RPhi) + yl*math.sin(RPhi) + Ra*math.sin(RPhi)
+    y = -xl*math.sin(RPhi) + yl*math.cos(RPhi) - Ra*(1 - math.cos(RPhi))
     return x, y
 
-def GetTargetXY(Psi):
+def GetTargetXY(Phi):
     xl, yl = GetTargetPosition()
-    x, y = ScreenTransformationXY(xl, yl, Psi)
+    x, y = ScreenTransformationXY(xl, yl, Phi)
     return x, y
 
-def GetTrgetAccelerationXY(Psi):
+def GetTrgetAccelerationXY(Phi):
     # Return the target image acceleration in pixels/sec2
-    x0, y0 = GetTargetXY(Psi)
+    x0, y0 = GetTargetXY(Phi)
     t0 = date.datetime.now()
-    x1, y1 = GetTargetXY(Psi)
+    x1, y1 = GetTargetXY(Phi)
     t1 = date.datetime.now()
-    x2, y2 = GetTargetXY(Psi)
+    x2, y2 = GetTargetXY(Phi)
     t2 = date.datetime.now()
     dt1 = t1 - t0
     dt2 = t2 - t1
@@ -119,16 +119,16 @@ def GetTrgetAccelerationXY(Psi):
     return t2, x2, y2, vx1, vy1, ax, ay
 
 
-def GetMachineState(Psi):
+def GetMachineState(Phi):
     Phi, Theta, Psi, St = GetBodyState()
-    t, x, y, vx, vy, ax, ay = GetTrgetAccelerationXY(Psi)
+    t, x, y, vx, vy, ax, ay = GetTrgetAccelerationXY(Phi)
     state = {"time": t, "x": x, "y": y, "vx": vx, "vy": vy, "ax": ax, "ay": ay, "roll": Phi, "pitch": Theta, "yaw": Psi, "Throttle": St}
     StateHistory.insert(0,state)
     StateHistory.pop(3)
 
 def PrepareControllSignals():
     Phi, Theta, Psi, St = GetBodyState()
-    GetMachineState(Psi)
+    GetMachineState(Phi)
     x0 = StateHistory[0]["x"]
     y0 = StateHistory[0]["y"]
     x1 = StateHistory[1]["x"]
