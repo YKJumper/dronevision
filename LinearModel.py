@@ -3,7 +3,7 @@ import datetime as date
 
 StateHistory = [] # Sate history list
 Ra = 50 # Rotation center coordinates in xOy (0,-Ra)
-dt = 120 # Correction period 2*dt, ms
+dt = 500 # Correction period 2*dt, ms
 
 #region ============ External Functions
 def GetTargetPosition(ObjectId):
@@ -26,7 +26,7 @@ def InitGuidingParameters():
     # Se (Dynamic) == the equilibrium position of throttle signal
     # Phie (Dynamic) == the equilibrium position of throttle signal
     Phi, Theta, Psi, St = GetBodyState()
-    Amax = 10
+    Amax = 1000
     Se = St
     Phie = Phi
     Theta0 = Theta
