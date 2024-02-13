@@ -119,7 +119,7 @@ def GetTrgetAccelerationXY(Phi):
     return t2, x2, y2, vx1, vy1, ax, ay
 
 
-def GetMachineState(Phi):
+def GetMachineState():
     Phi, Theta, Psi, St = GetBodyState()
     t, x, y, vx, vy, ax, ay = GetTrgetAccelerationXY(Phi)
     state = {"time": t, "x": x, "y": y, "vx": vx, "vy": vy, "ax": ax, "ay": ay, "roll": Phi, "pitch": Theta, "yaw": Psi, "Throttle": St}
