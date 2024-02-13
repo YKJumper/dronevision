@@ -1,9 +1,9 @@
 import math
 import datetime as date
 
-StateHistory = []
-Ra = 50
-dt = 120
+StateHistory = [] # Sate history list
+Ra = 50 # Rotation center coordinates in xOy (0,-Ra)
+dt = 120 # Correction period 2*dt, ms
 
 #region ============ External Functions
 def GetTargetPosition(ObjectId):
@@ -14,7 +14,7 @@ def GetTargetPosition(ObjectId):
     return xl, yl
 
 def GetBodyState():
-    # Return body orientation Pitch, Roll, Yaw and throttle level St in [0;1]
+    # Return body orientation Roll, Pitch, Yaw and throttle level St in [0;1]
     Phi = 0
     Theta = 0
     Psi = 0
@@ -95,7 +95,7 @@ def ScreenTransformationXY(xl, yl, Psi):
     y = -xl*math.sin(RPsi) + yl*math.cos(RPsi) - Ra*(1 - math.cos(RPsi))
     return x, y
 
-def GetTargetXY(Psi, Ra):
+def GetTargetXY(Psi):
     xl, yl = GetTargetPosition()
     x, y = ScreenTransformationXY(xl, yl, Psi)
     return x, y
@@ -142,12 +142,12 @@ def PrepareControllSignals():
     dec_x = vx0/2/dt + x0/dt/dt - acc_x
     dec_y = vy0/2/dt + y0/dt/dt - acc_y
     Kcor = (x1/(x1-x0) + y1/(y1-y0))/2
-    Amax = Amax*Kcor
+    Amax = Amax/Kcor
     dSt1 = (acc_x**2+acc_y**2)**0.5/Amax
     St1 = St + dSt1
     Phi1 = math.asin(acc_y/dSt1)
     dSt2 = (dec_x**2+dec_y**2)**0.5/Amax
     St2 = St + dSt2
     Phi2 = math.asin(dec_y/dSt2)
-    return St1, Phi1, St2, Phi2
+    return St1, Phi1, St2, Phi2, St, Phi
 #endregion ============
