@@ -221,6 +221,23 @@ def matrixBody2Glob(Theta, Phi, Psi, Alpha):
     B = transposeMatrix(A)
     return B
 
+def ScreenTransformationXY(xl, yl, Phi):
+    # xlOlyl -- система координат камери, Ol -- верхній лівий кут, в якій трекер повертає координати цілі
+    # xl -- координата по горизонталі вправа, yl -- координата по вертикалі вниз
+    # (__Xc, __Yc) -- координати центру екрану
+    # (0, -__Ra) -- центр обертання екрану
+    # xrOryr -- система координат з центром Or в центрі екрану
+    # xr -- координата по горизонталі вправа, yr -- координата по вертикалі вгору
+    # xOy -- вертикально орієнтований екран, рухається плоскопаралельно з корпусом дрона
+    # Перетворення системи координат на екрані
+    # Phi -- поворот Roll в градусах
+    global __Xc, __Yc, __Ra
+    RPhi = GradToRad(Phi); Cph = math.cos(RPhi); Sph = math.sin(RPhi)
+    xr = (xl - __Xc); yr = (__Yc -yl)
+    x = xr*Cph + yr*Sph + __Ra*Sph
+    y = -xr*Sph + yr*Cph - __Ra*(1 - Cph)
+    return x, y
+
 #endregion ===============================
 
 #region ============ Guiding Functions
