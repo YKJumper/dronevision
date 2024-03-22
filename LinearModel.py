@@ -333,7 +333,7 @@ def PrepareControllSignals():
     v = absVector(v0)
     if St0 != St1:
         __Ka = da/(St0-St1)
-        
+    # Встановлюємо Roll -- ціль має бути по осі OYr
     if r == 0:
         Phi1 = 0
     else:
@@ -342,13 +342,18 @@ def PrepareControllSignals():
         Phi1 = __Phi_max
     if Phi1 < -__Phi_max:
         Phi1 = -__Phi_max
-        
-    dSt = 2/__Ka/dt*(r0[1]/dt - v)
+    
+    # Коригуємо тягу -- dSt. рахуємо зміну тяги
+    dSt = -(r0[1]/dt + v)/2/__Ka/dt
     St = Ste + dSt
     if St > 1:
         St = 1
     if St < 0:
         St = 0
+    
+    # Встановлюємо значення параметрів після корекції
+    Ste = (Ste + St)/2
+    Phie = Phi1
     return St, Phi1, Ste, Phie
 #endregion ============
 
