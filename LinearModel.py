@@ -331,30 +331,78 @@ def PrepareControllSignals():
     r = absVector(r0)
     da = absVector(a0) - absVector(a1)
     v = absVector(v0)
+    # Finding desired accelerations for next (0,dt] period
+    ax = -(3*v0[0]/2/dt + r0[0]/dt/dt)
+    ay = -(3*v0[1]/2/dt + r0[1]/dt/dt)
+    
+    # Finding desired accelerations for next (dt,2*dt] period
+    bx = v0[0]/dt/2 + r0[0]/dt/dt
+    by = v0[1]/dt/2 + r0[1]/dt/dt
+    
+    a = (ax*ax + ay*ay)**0.5
+    b = (bx*bx + by*by)**0.5
+    
     if St0 != St1:
         __Ka = da/(St0-St1)
+        __Ao = (a1*St0-a0*St1)/(St0-St1)
+        
     # Встановлюємо Roll -- ціль має бути по осі OYr
-    if r == 0:
-        Phi1 = 0
+    if ay == 0:
+        Phia = 0
+        if ax > 0:
+            Phia = __Phi_max
+        if ax < 0:
+            Phia = -__Phi_max
     else:
-        Phi1 = RadToGrad(math.asin(r0[0]/r))
-    if Phi1 > __Phi_max:
-        Phi1 = __Phi_max
-    if Phi1 < -__Phi_max:
-        Phi1 = -__Phi_max
-    
-    # Коригуємо тягу -- dSt. рахуємо зміну тяги
-    dSt = -(r0[1]/dt + v)/2/__Ka/dt
-    St = Ste + dSt
-    if St > 1:
-        St = 1
-    if St < 0:
-        St = 0
-    
-    # Встановлюємо значення параметрів після корекції
-    Ste = (Ste + St)/2
-    Phie = Phi1
-    return St, Phi1, Ste, Phie
+        Phia = RadToGrad(math.atan(ax/ay))
+        
+    if by == 0:
+        Phib = 0
+        if bx > 0:
+            Phib = __Phi_max
+        if bx < 0:
+            Phib = -__Phi_max
+    else:
+        Phib = RadToGrad(math.atan(bx/by))        
+        
+    if Phia > __Phi_max:
+        Phia = __Phi_max
+    if Phia < -__Phi_max:
+        Phia = -__Phi_max
+      
+    if Phib > __Phi_max:
+        Phib = __Phi_max
+    if Phib < -__Phi_max:
+        Phib = -__Phi_max
+        
+    Phie = 0
+        
+    # Коригуємо тягу -- St.
+    if __Ka == 0:
+        Sta = 1
+        Stb = 1
+        Ste = 1  
+    else:
+        Sta = (a - __Ao)/__Ka
+        Stb = (b - __Ao)/__Ka
+        Ste =  __Ao/__Ka
+
+    if Sta > 1:
+        Sta = 1
+    if Sta < 0:
+        Sta = 0
+        
+    if Stb > 1:
+        Stb = 1
+    if Stb < 0:
+        Stb = 0
+        
+    if Ste > 1:
+        Ste = 1
+    if Ste < 0:
+        Ste = 0        
+
+    return Sta, Stb, Phia, Phib, Ste, Phie
 #endregion ============
 
 if __name__ == "__main__":
